@@ -1,0 +1,597 @@
+{
+  "name": "PolicyID",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1s4y8oNNwxN7C4mmdNUWHIiV0xHlPpcQxkURWLnL1shM",
+          "mode": "list",
+          "cachedResultName": "Acrisure",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1s4y8oNNwxN7C4mmdNUWHIiV0xHlPpcQxkURWLnL1shM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1s4y8oNNwxN7C4mmdNUWHIiV0xHlPpcQxkURWLnL1shM/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "policy_id",
+              "lookupValue": "={{ $json.policy_number }}"
+            }
+          ]
+        },
+        "combineFilters": "OR",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2864,
+        912
+      ],
+      "id": "26950c0c-4c70-4e4e-8da2-3dce5eb589f3",
+      "name": "Look up in Existing Policy",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MehNWzw99tNhzbfI",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ad3b5b2f-637f-4d0d-b003-c0b2348e2dac",
+              "leftValue": "={{ $json.policy_id }}",
+              "rightValue": "={{ $json.policy_id }}",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2640,
+        912
+      ],
+      "id": "ca1fa378-a98e-4873-a23e-296acd9024d9",
+      "name": "Existing Policy Found / Not",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "=",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1ZOv5Aq44ywk_-Xvjt-uuyJcAw6_LMYW9",
+            "mode": "list",
+            "cachedResultName": "John Smith Quotes",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1ZOv5Aq44ywk_-Xvjt-uuyJcAw6_LMYW9"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1232,
+        720
+      ],
+      "id": "a1fd5ae9-7430-40af-8a37-f90859a34387",
+      "name": "Search for Quotes",
+      "executeOnce": true,
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "9tIMjbgGSXLOtNrn",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1008,
+        720
+      ],
+      "id": "45e0bebb-373b-4cd5-9b56-cbb7538d635d",
+      "name": "Download files",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Bz5QvbB3Aiaw6xh1",
+          "name": "Google Drive account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop through all incoming items\n// 'items' is the global variable in n8n Code nodes containing input data\nconst mergedBinary = {};\nconst summary = [];\n\nitems.forEach((item, index) => {\n  if (item.binary) {\n    Object.keys(item.binary).forEach((key) => {\n      // Create a unique key for the new single item.\n      // We append the index (e.g., 'data_0', 'data_1') so that \n      // files don't overwrite each other if they share the generic name \"data\".\n      const newKey = `${key}_${index}`;\n      \n      mergedBinary[newKey] = item.binary[key];\n      \n      // Optional: Add metadata to JSON output for reference\n      summary.push({\n        originalKey: key,\n        newKey: newKey,\n        fileName: item.binary[key].fileName\n      });\n    });\n  }\n});\n\n// Return exactly one item containing all binary objects\nreturn [\n  {\n    json: {\n      message: \"Successfully merged binary items\",\n      fileCount: Object.keys(mergedBinary).length,\n      files: summary\n    },\n    binary: mergedBinary\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -784,
+        720
+      ],
+      "id": "4ba43b47-dec0-404f-91f7-9e5d058a9350",
+      "name": "Get Files"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1s4y8oNNwxN7C4mmdNUWHIiV0xHlPpcQxkURWLnL1shM",
+          "mode": "list",
+          "cachedResultName": "Acrisure",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1s4y8oNNwxN7C4mmdNUWHIiV0xHlPpcQxkURWLnL1shM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1051123065,
+          "mode": "list",
+          "cachedResultName": "Smith John",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1s4y8oNNwxN7C4mmdNUWHIiV0xHlPpcQxkURWLnL1shM/edit#gid=1051123065"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "customer_id",
+              "lookupValue": "={{$node[\"Existing Policy Found / Not\"].json[\"customer_id\"] }}"
+            }
+          ]
+        },
+        "combineFilters": "OR",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -1680,
+        720
+      ],
+      "id": "9a09cfed-33e0-42e6-a635-51bc47e847c7",
+      "name": "Get available quotes",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MehNWzw99tNhzbfI",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// !!! IMPORTANT INSTRUCTION !!!\n// Do NOT paste this code into the \"Email\" node.\n// This code must go into a \"Code\" node set to \"Run Once for All Items\".\n// The Output of this node (html_body) will then be used in the Email node.\n\n// 1. Initialize an empty string for the table rows\nlet emailRows = '';\n\n// 2. Loop through every quote found in the previous node\n// We use 'items' which is the n8n global variable for all input data\nitems.forEach((item, index) => {\n  const quote = item.json;\n\n  // Safety check: Ensure we have a premium to format\n  const premiumValue = quote.quoted_premium || 0;\n  \n  // Format the premium as currency (USD)\n  const formattedPremium = new Intl.NumberFormat('en-US', {\n    style: 'currency',\n    currency: 'USD'\n  }).format(premiumValue);\n\n  let AddedCoverage = 'N/A';\n  if (index === 1) AddedCoverage = 'PIP';\n\n  // Construct the selection URL with your specific Webhook\n  // We append the quote_id and customer_id as query parameters so your receiving workflow can use them.\n  const selectionUrl = `https://policyflow.app.n8n.cloud/webhook/90cfb756-469a-43e2-95fc-7da821a6b650?quote_id=${quote.quote_id}&customer_id=${quote.customer_id}&policy_id=${quote.original_policy_id}&Premium=${quote.quoted_premium}&carrier_name=${quote.carrier_name}`;\n\n  // Build the HTML for this specific row\n  emailRows += `\n    <tr>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee;\">\n        <strong style=\"font-size: 16px; color: #333;\">${quote.carrier_name || 'Unknown Carrier'}</strong>\n        ${quote.broker_recommendation === 2 ? '<br><span style=\"color: green; font-weight: bold; font-size: 10px;\">★ RECOMMENDED</span>' : ''}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; color: #555;\">\n        ${quote.quote_id}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; color: #555;\">\n        ${quote.quoted_coverage || 'N/A'}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; color: #555;\">\n        ${quote.quoted_deductible || 'N/A'}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; color: #555;\">\n        ${AddedCoverage}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; font-weight: bold;\">\n        ${quote.quoted_premium}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; text-align: center;\">\n        <a href=\"${selectionUrl}\" target=\"_blank\" style=\"background-color: #007bff; color: #ffffff; padding: 8px 12px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;\">Select</a>\n      </td>\n    </tr>\n  `;\n});\n\n// 3. Construct the email HTML fragment (Removed <html>/<body> tags to prevent empty email issues)\nconst emailHtml = `\n<div style=\"font-family: Arial, sans-serif; color: #333; width: 100%; max-width: 600px; margin: 0 auto;\">\n  <h3>Insurance Quotes Available</h3>\n  <p>Hello,</p>\n  <p>We found ${items.length} quotes for your review based on your request.</p>\n  \n  <table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n    <thead style=\"background-color: #f8f9fa;\">\n      <tr>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Provider</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Quote ID</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Coverage(Comprehensive)</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Deductible</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">AddedCoverage</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Premium</th>\n        <th style=\"padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6;\">Action</th>\n      </tr>\n    </thead>\n    <tbody>\n      ${emailRows}\n    </tbody>\n  </table>\n\n  <p style=\"margin-top: 20px;\">Please select the option that best fits your needs.</p>\n  <p>Best regards,<br>Your Insurance Team</p>\n</div>\n`;\n\n// 4. Output the result\n// This creates a single item with a field called 'html_body'\nreturn [{\n  json: {\n    subject: `Insurance Quotes for ${items[0].json.customer_id}`,\n    html_body: emailHtml\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1456,
+        720
+      ],
+      "id": "8c32ceae-730d-45ea-9baf-335fc78ec8d7",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {
+          "allowFileUploads": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -3312,
+        912
+      ],
+      "id": "957f11ee-7d56-41e8-bc84-f0ac961dcd3f",
+      "name": "When chat message received",
+      "webhookId": "01aceb0f-4ac4-4a14-8d4e-ae2314adcfee"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  // 1) Read the correct field and normalize\n  const raw = item.json.chatInput ?? item.json.text ?? '';\n  const text = String(raw).trim().replace(/^\"+|\"+$/g, ''); // remove leading/trailing quotes\n \n  // 2) Extract the policy number (format: POL-YYYY-NNNNNN)\n  const match = text.match(/\\bPOL-\\d{4}-\\d{6}\\b/i);\n \n  // 3) Write result back\n  item.json.policy_number = match ? match[0] : null;\n  item.json._parsedFrom = 'chatInput';\n  item.json._raw = raw;       // optional: keep original for audit\n  item.json._normalized = text; // optional: keep normalized text\n}\n \nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3088,
+        912
+      ],
+      "id": "22a7b816-6b2e-41e6-9e18-02758322e789",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1920,
+        688
+      ],
+      "id": "a924119e-16aa-449f-82f5-24a96bdef861",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "oterademoacrisure@gmail.com",
+        "subject": "Acknowledge Details",
+        "message": "=Year/Make/Model:   {{ $json[\"Year/Make/Mode\"] }};\nLast known mileage: {{ $json[\"Current Mileage\"] }};\nNo of drivers: {{ $json[\"Number of drivers\"] }};\nCoverage: {{ $json.Coverage }}\nBased on your car usage, we are assuming your current odometer reading is: {{ Number($json[\"Current Mileage\"]) + Number($json[\"annual mileage\"])}};\nPlease confirm the odometer reading and number of drivers.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -2480,
+        640
+      ],
+      "id": "2208551e-8ccf-425d-92bb-a4335b5c0189",
+      "name": "Send message and wait for response",
+      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ol1gBESUbhHw1c1c",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "progressivecgt@gmail.com",
+        "subject": "Request For Auto Quote",
+        "message": "=Dear Sir/Madam,\nI hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate:\nName:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }};\nDate of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }};\nAddress:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }};\nYear/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }};\nNo of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }};\nCurrent odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}}; \nAccidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};\n\nBest Regards\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -2144,
+        480
+      ],
+      "id": "44952da8-5b3e-4905-a4f4-dd4d14f14c75",
+      "name": "Send message and wait for response1",
+      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ol1gBESUbhHw1c1c",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "travellerscgt@gmail.com",
+        "subject": "Request For Auto Quote",
+        "message": "=Dear Sir/Madam,\nI hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate:\nName:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }};\nDate of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }};\nAddress:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }};\nYear/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }};\nNo of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }};\nCurrent odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}}; \nAccidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};\n\nBest Regards\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -2160,
+        720
+      ],
+      "id": "32c0a7d7-9a90-45d1-9c26-e4ca89b4cf2d",
+      "name": "Travellers1",
+      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ol1gBESUbhHw1c1c",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "libertymutualcgt@gmail.com",
+        "subject": "Request For Auto Quote",
+        "message": "=Dear Sir/Madam,\nI hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate:\nName:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }};\nDate of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }};\nAddress:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }};\nYear/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }};\nNo of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }};\nCurrent odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}}; \nAccidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};\n\nBest Regards\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -2144,
+        928
+      ],
+      "id": "ee7f0b55-57fd-4e5e-b810-e25a8f70ce77",
+      "name": "Travellers",
+      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ol1gBESUbhHw1c1c",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "oterademoacrisure@gmail.com",
+        "subject": "={{ $('Code in JavaScript').first().json.subject }}",
+        "message": "={{ $('Code in JavaScript').first().json.html_body }}",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "data_0"
+              },
+              {
+                "property": "data_1"
+              },
+              {
+                "property": "data_2"
+              },
+              {
+                "property": "data_3"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -576,
+        704
+      ],
+      "id": "7ec4a3a0-3af5-43f7-a55d-7122aa569a38",
+      "name": "Send a message1",
+      "webhookId": "ddc06c68-219e-446c-a30b-519b67b3862a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ol1gBESUbhHw1c1c",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "oterademoacrisure@gmail.com",
+        "subject": "=Wrong policy number provided",
+        "message": "=Please give correct existing policy number",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -2384,
+        1104
+      ],
+      "id": "1a9e75a7-3f0d-4b8b-a268-d57e0122ec07",
+      "name": "Send a message",
+      "webhookId": "ddc06c68-219e-446c-a30b-519b67b3862a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ol1gBESUbhHw1c1c",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Look up in Existing Policy": {
+      "main": [
+        [
+          {
+            "node": "Existing Policy Found / Not",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Existing Policy Found / Not": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search for Quotes": {
+      "main": [
+        [
+          {
+            "node": "Download files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download files": {
+      "main": [
+        [
+          {
+            "node": "Get Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Files": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get available quotes": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Search for Quotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Look up in Existing Policy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Get available quotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Travellers1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Travellers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Travellers1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Travellers": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "43a037b6-1fb6-48ab-8682-93114ca38ad7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5d9877f3c605b098b54a25d7959e61484f8ef1823d6175b60513f52fb13c0bf4"
+  },
+  "id": "Sn9TjPubI6bLznxF",
+  "tags": []
+}

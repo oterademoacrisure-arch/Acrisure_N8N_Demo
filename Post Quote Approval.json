@@ -1,0 +1,206 @@
+{
+  "name": "Post Quote Approval",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "90cfb756-469a-43e2-95fc-7da821a6b650",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -176,
+        32
+      ],
+      "id": "4ed2b4af-1610-40d9-b6e0-1682a7db809a",
+      "name": "Webhook",
+      "webhookId": "90cfb756-469a-43e2-95fc-7da821a6b650"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bc13bce1-99fd-4b04-8e17-cf7e337d85d6",
+              "name": "accepted_quote_id",
+              "value": "={{ $json.query.quote_id }}",
+              "type": "string"
+            },
+            {
+              "id": "8a101b2c-f54c-4555-8bd9-3ce893b02123",
+              "name": "customer_id",
+              "value": "={{ $json.query.customer_id }}",
+              "type": "string"
+            },
+            {
+              "id": "1f1d7d87-28b4-4390-b37b-2dbc122a96d0",
+              "name": "date_now",
+              "value": "={{ $now }}",
+              "type": "string"
+            },
+            {
+              "id": "97171129-3899-47b4-b5a2-a907d29d5e30",
+              "name": "Carrier_Name",
+              "value": "={{ $json.query.carrier_name }}",
+              "type": "string"
+            },
+            {
+              "id": "8ac50b7a-2ecb-4038-9fee-c8e49bf24c28",
+              "name": "Policy_ID",
+              "value": "={{ $json.query.policy_id }}",
+              "type": "string"
+            },
+            {
+              "id": "8cac9cb9-b738-4529-add9-eb5db0508506",
+              "name": "Premium",
+              "value": "={{ $json.query.Premium }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        32
+      ],
+      "id": "eaaeffda-cb7b-4b1a-8867-79a2ec1ebda2",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "case",
+        "type": "Structural",
+        "additionalFields": {
+          "description": "=Accepted quoted: {{ $json.accepted_quote_id }}\nCustomer id: {{ $json.customer_id }}\npolicy_id: {{ $json.Policy_ID }}\nPremium: {{ $json.Premium }}\ncarrier_name: {{ $json.Carrier_Name }}",
+          "subject": "Quote Accepted"
+        }
+      },
+      "type": "n8n-nodes-base.salesforce",
+      "typeVersion": 1,
+      "position": [
+        496,
+        32
+      ],
+      "id": "64c7e5fc-d417-4610-991c-d1238543b9f8",
+      "name": "Create a case",
+      "credentials": {
+        "salesforceOAuth2Api": {
+          "id": "H0wa4zheMq4O1iKR",
+          "name": "Salesforce account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "=1s4y8oNNwxN7C4mmdNUWHIiV0xHlPpcQxkURWLnL1shM",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "=Accepted Quotes",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "customer_id",
+              "displayName": "customer_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "quote_id",
+              "displayName": "quote_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        272,
+        32
+      ],
+      "id": "42c4c39f-16ec-4cbf-9093-ff86348f952b",
+      "name": "Store Accepted Quote",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MehNWzw99tNhzbfI",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Store Accepted Quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Accepted Quote": {
+      "main": [
+        [
+          {
+            "node": "Create a case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "2564b156-cfad-4174-a6b5-6c055961609c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5d9877f3c605b098b54a25d7959e61484f8ef1823d6175b60513f52fb13c0bf4"
+  },
+  "id": "LK9iU9NquousEcw0",
+  "tags": []
+}

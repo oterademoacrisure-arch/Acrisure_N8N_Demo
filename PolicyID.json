@@ -243,8 +243,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -1920,
-        688
+        -1872,
+        576
       ],
       "id": "a924119e-16aa-449f-82f5-24a96bdef861",
       "name": "Merge"
@@ -276,30 +276,6 @@
     {
       "parameters": {
         "operation": "sendAndWait",
-        "sendTo": "progressivecgt@gmail.com",
-        "subject": "Request For Auto Quote",
-        "message": "=Dear Sir/Madam,\nI hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate:\nName:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }};\nDate of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }};\nAddress:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }};\nYear/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }};\nNo of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }};\nCurrent odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}}; \nAccidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};\n\nBest Regards\n",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        -2144,
-        480
-      ],
-      "id": "44952da8-5b3e-4905-a4f4-dd4d14f14c75",
-      "name": "Send message and wait for response1",
-      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "ol1gBESUbhHw1c1c",
-          "name": "Gmail account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "sendAndWait",
         "sendTo": "travellerscgt@gmail.com",
         "subject": "Request For Auto Quote",
         "message": "=Dear Sir/Madam,\nI hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate:\nName:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }};\nDate of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }};\nAddress:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }};\nYear/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }};\nNo of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }};\nCurrent odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}}; \nAccidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};\n\nBest Regards\n",
@@ -313,30 +289,6 @@
       ],
       "id": "32c0a7d7-9a90-45d1-9c26-e4ca89b4cf2d",
       "name": "Travellers1",
-      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "ol1gBESUbhHw1c1c",
-          "name": "Gmail account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "sendAndWait",
-        "sendTo": "libertymutualcgt@gmail.com",
-        "subject": "Request For Auto Quote",
-        "message": "=Dear Sir/Madam,\nI hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate:\nName:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }};\nDate of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }};\nAddress:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }};\nYear/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }};\nNo of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }};\nCurrent odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}}; \nAccidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};\n\nBest Regards\n",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        -2144,
-        928
-      ],
-      "id": "ee7f0b55-57fd-4e5e-b810-e25a8f70ce77",
-      "name": "Travellers",
       "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
       "credentials": {
         "gmailOAuth2": {
@@ -387,6 +339,78 @@
     },
     {
       "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "libertymutualcgt@gmail.com",
+        "subject": "Request For Auto Quote",
+        "message": "=Dear Sir/Madam,\nI hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate:\nName:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }};\nDate of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }};\nAddress:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }};\nYear/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }};\nNo of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }};\nCurrent odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}}; \nAccidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};\n\nBest Regards\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -2144,
+        928
+      ],
+      "id": "ee7f0b55-57fd-4e5e-b810-e25a8f70ce77",
+      "name": "liberty mutual",
+      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ol1gBESUbhHw1c1c",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "progressivecgt@gmail.com",
+        "subject": "Request For Auto Quote",
+        "message": "=Dear Sir/Madam,\nI hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate:\nName:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }};\nDate of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }};\nAddress:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }};\nYear/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }};\nNo of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }};\nCurrent odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}}; \nAccidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};\n\nBest Regards\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -2176,
+        464
+      ],
+      "id": "44952da8-5b3e-4905-a4f4-dd4d14f14c75",
+      "name": "progressive",
+      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ol1gBESUbhHw1c1c",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "case",
+        "type": "Structural",
+        "additionalFields": {
+          "description": "=Dear Sir/Madam, I hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate: Name:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }}; Date of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }}; Address:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }}; Year/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }}; No of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }}; Current odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}};  Accidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};  Best Regards",
+          "subject": "Quote Accepted"
+        }
+      },
+      "type": "n8n-nodes-base.salesforce",
+      "typeVersion": 1,
+      "position": [
+        -2176,
+        256
+      ],
+      "id": "71274ca5-3377-4e52-ab64-97f245d07517",
+      "name": "Create a case",
+      "credentials": {
+        "salesforceOAuth2Api": {
+          "id": "H0wa4zheMq4O1iKR",
+          "name": "Salesforce account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
         "sendTo": "oterademoacrisure@gmail.com",
         "subject": "=Wrong policy number provided",
         "message": "=Please give correct existing policy number",
@@ -399,7 +423,7 @@
         1104
       ],
       "id": "1a9e75a7-3f0d-4b8b-a268-d57e0122ec07",
-      "name": "Send a message",
+      "name": "Resubmit the correct policy document",
       "webhookId": "ddc06c68-219e-446c-a30b-519b67b3862a",
       "credentials": {
         "gmailOAuth2": {
@@ -433,7 +457,7 @@
         ],
         [
           {
-            "node": "Send a message",
+            "node": "Resubmit the correct policy document",
             "type": "main",
             "index": 0
           }
@@ -532,7 +556,7 @@
       "main": [
         [
           {
-            "node": "Send message and wait for response1",
+            "node": "progressive",
             "type": "main",
             "index": 0
           },
@@ -542,18 +566,12 @@
             "index": 0
           },
           {
-            "node": "Travellers",
+            "node": "liberty mutual",
             "type": "main",
             "index": 0
-          }
-        ]
-      ]
-    },
-    "Send message and wait for response1": {
-      "main": [
-        [
+          },
           {
-            "node": "Merge",
+            "node": "Create a case",
             "type": "main",
             "index": 0
           }
@@ -571,7 +589,7 @@
         ]
       ]
     },
-    "Travellers": {
+    "liberty mutual": {
       "main": [
         [
           {
@@ -581,13 +599,35 @@
           }
         ]
       ]
+    },
+    "progressive": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a case": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "43a037b6-1fb6-48ab-8682-93114ca38ad7",
+  "versionId": "47d48f87-e263-46fb-9491-e397b5fdfb77",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "5d9877f3c605b098b54a25d7959e61484f8ef1823d6175b60513f52fb13c0bf4"

@@ -51,7 +51,15 @@ for Google Drive and google sheet (dummy Policy data and quotes)
 
 oterademoacrisure@gmail.com   Otera@123
 
+
+for Otera Redirect URI..
+Client ID: 514264987674-fep5lm1u7d6k2v7bik2a6jq8ob1064gd.apps.googleusercontent.com-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
+
+for N8n Redirect URI
+514264987674-se375nrimpk58ahor2d6v5o4b85q82ib.apps.googleusercontent.com-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
+
 ====================
+
 
 
 

@@ -29,8 +29,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -1376,
-        560
+        -1120,
+        784
       ],
       "id": "badf1946-a041-48b3-9eb6-2916c8a70d0c",
       "name": "Existing Policy Found / Not"
@@ -44,27 +44,12 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.3,
       "position": [
-        -2048,
-        560
+        -1920,
+        784
       ],
       "id": "b4a41581-da64-4e1c-8849-a78567c4a1f6",
       "name": "When chat message received",
       "webhookId": "01aceb0f-4ac4-4a14-8d4e-ae2314adcfee"
-    },
-    {
-      "parameters": {
-        "operation": "pdf",
-        "binaryPropertyName": "data0",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.extractFromFile",
-      "typeVersion": 1.1,
-      "position": [
-        -1856,
-        560
-      ],
-      "id": "8378a4ab-e3b3-4842-9ad4-d2ea1135a785",
-      "name": "Extract from File"
     },
     {
       "parameters": {
@@ -86,7 +71,7 @@
           "values": [
             {
               "lookupColumn": "policy_id",
-              "lookupValue": "={{ $json.extractedPolicyNumber }}"
+              "lookupValue": "={{ $json.policy_number }}"
             }
           ]
         },
@@ -96,8 +81,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -1584,
-        560
+        -1344,
+        784
       ],
       "id": "aa14d80c-b97d-4d68-bb12-7b165de8c075",
       "name": "Look up in Existing Policy1",
@@ -110,19 +95,6 @@
           "name": "Google Sheets account"
         }
       }
-    },
-    {
-      "parameters": {
-        "jsCode": "// Get the text extracted from the PDF\nconst text = items[0].json.text;\n\n// Regular expression to match your policy number format (e.g., POL-2024-001234)\nconst policyRegex = /POL-\\d{4}-\\d+/;\nconst match = text.match(policyRegex);\n\n// Create a new field called 'extractedPolicyNumber'\nreturn {\n  extractedPolicyNumber: match ? match[0] : null\n};"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -1728,
-        560
-      ],
-      "id": "892158f9-90a6-4edd-9ac3-f81c508a7a10",
-      "name": "Code in JavaScript1"
     },
     {
       "parameters": {
@@ -144,7 +116,7 @@
       "typeVersion": 3,
       "position": [
         224,
-        640
+        592
       ],
       "id": "c97acadf-0a37-46cb-a10d-321e7c399343",
       "name": "Search for Quotes",
@@ -171,7 +143,7 @@
       "typeVersion": 3,
       "position": [
         448,
-        640
+        592
       ],
       "id": "ecf244d3-c27d-4c0c-94da-e910c41d6257",
       "name": "Download files",
@@ -190,7 +162,7 @@
       "typeVersion": 2,
       "position": [
         672,
-        640
+        592
       ],
       "id": "b4b5b1ba-c385-4a5d-97de-65991dc7a5b6",
       "name": "Get Files"
@@ -226,7 +198,7 @@
       "typeVersion": 4.6,
       "position": [
         -224,
-        640
+        592
       ],
       "id": "39bd4d5f-575f-456a-bd12-d6fed63852cc",
       "name": "Get available quotes",
@@ -240,13 +212,13 @@
     },
     {
       "parameters": {
-        "jsCode": "// !!! IMPORTANT INSTRUCTION !!!\n// Do NOT paste this code into the \"Email\" node.\n// This code must go into a \"Code\" node set to \"Run Once for All Items\".\n// The Output of this node (html_body) will then be used in the Email node.\n\n// 1. Initialize an empty string for the table rows\nlet emailRows = '';\n\n// 2. Loop through every quote found in the previous node\n// We use 'items' which is the n8n global variable for all input data\nitems.forEach((item, index) => {\n  const quote = item.json;\n\n  // Safety check: Ensure we have a premium to format\n  const premiumValue = quote.quoted_premium || 0;\n  \n  // Format the premium as currency (USD)\n  const formattedPremium = new Intl.NumberFormat('en-US', {\n    style: 'currency',\n    currency: 'USD'\n  }).format(premiumValue);\n\n  let AddedCoverage = 'N/A';\n  if (index === 1) AddedCoverage = 'PIP';\n\n  // Construct the selection URL with your specific Webhook\n  // We append the quote_id and customer_id as query parameters so your receiving workflow can use them.\n  const selectionUrl = `https://studio.deepopinion.ai/builder/webhook/90cfb756-469a-43e2-95fc-7da821a6b650?quote_id=${quote.quote_id}&customer_id=${quote.customer_id}&policy_id=${quote.original_policy_id}&Premium=${quote.quoted_premium}&carrier_name=${quote.carrier_name}`;\n\n  // Build the HTML for this specific row\n  emailRows += `\n    <tr>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee;\">\n        <strong style=\"font-size: 16px; color: #333;\">${quote.carrier_name || 'Unknown Carrier'}</strong>\n        ${quote.broker_recommendation === 2 ? '<br><span style=\"color: green; font-weight: bold; font-size: 10px;\">★ RECOMMENDED</span>' : ''}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; color: #555;\">\n        ${quote.quote_id}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; color: #555;\">\n        ${quote.quoted_coverage || 'N/A'}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; color: #555;\">\n        ${quote.quoted_deductible || 'N/A'}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; color: #555;\">\n        ${AddedCoverage}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; font-weight: bold;\">\n        ${quote.quoted_premium}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; text-align: center;\">\n        <a href=\"${selectionUrl}\" target=\"_blank\" style=\"background-color: #007bff; color: #ffffff; padding: 8px 12px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;\">Select</a>\n      </td>\n    </tr>\n  `;\n});\n\n// 3. Construct the email HTML fragment (Removed <html>/<body> tags to prevent empty email issues)\nconst emailHtml = `\n<div style=\"font-family: Arial, sans-serif; color: #333; width: 100%; max-width: 600px; margin: 0 auto;\">\n  <h3>Insurance Quotes Available</h3>\n  <p>Hello,</p>\n  <p>We found ${items.length} quotes for your review based on your request.</p>\n  \n  <table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n    <thead style=\"background-color: #f8f9fa;\">\n      <tr>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Provider</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Quote ID</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Coverage(Comprehensive)</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Deductible</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">AddedCoverage</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Premium</th>\n        <th style=\"padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6;\">Action</th>\n      </tr>\n    </thead>\n    <tbody>\n      ${emailRows}\n    </tbody>\n  </table>\n\n  <p style=\"margin-top: 20px;\">Please select the option that best fits your needs.</p>\n  <p>Best regards,<br>Your Insurance Team</p>\n</div>\n`;\n\n// 4. Output the result\n// This creates a single item with a field called 'html_body'\nreturn [{\n  json: {\n    subject: `Insurance Quotes for ${items[0].json.customer_id}`,\n    html_body: emailHtml\n  }\n}];"
+        "jsCode": "// !!! IMPORTANT INSTRUCTION !!!\n// Do NOT paste this code into the \"Email\" node.\n// This code must go into a \"Code\" node set to \"Run Once for All Items\".\n// The Output of this node (html_body) will then be used in the Email node.\n\n// 1. Initialize an empty string for the table rows\nlet emailRows = '';\n\n// 2. Loop through every quote found in the previous node\n// We use 'items' which is the n8n global variable for all input data\nitems.forEach((item, index) => {\n  const quote = item.json;\n\n  // Safety check: Ensure we have a premium to format\n  const premiumValue = quote.quoted_premium || 0;\n  \n  // Format the premium as currency (USD)\n  const formattedPremium = new Intl.NumberFormat('en-US', {\n    style: 'currency',\n    currency: 'USD'\n  }).format(premiumValue);\n\n  let AddedCoverage = 'N/A';\n  if (index === 1) AddedCoverage = 'PIP';\n\n  // Construct the selection URL with your specific Webhook\n  // We append the quote_id and customer_id as query parameters so your receiving workflow can use them.\n  const selectionUrl = `\nhttps://policyflow.app.n8n.cloud/webhook/90cfb756-469a-43e2-95fc-7da821a6b650?quote_id=${quote.quote_id}&customer_id=${quote.customer_id}&policy_id=${quote.original_policy_id}&Premium=${quote.quoted_premium}&carrier_name=${quote.carrier_name}`;\n\n  // Build the HTML for this specific row\n  emailRows += `\n    <tr>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee;\">\n        <strong style=\"font-size: 16px; color: #333;\">${quote.carrier_name || 'Unknown Carrier'}</strong>\n        ${quote.broker_recommendation === 2 ? '<br><span style=\"color: green; font-weight: bold; font-size: 10px;\">★ RECOMMENDED</span>' : ''}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; color: #555;\">\n        ${quote.quote_id}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; color: #555;\">\n        ${quote.quoted_coverage || 'N/A'}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; color: #555;\">\n        ${quote.quoted_deductible || 'N/A'}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; color: #555;\">\n        ${AddedCoverage}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; font-weight: bold;\">\n        ${quote.quoted_premium}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; text-align: center;\">\n        <a href=\"${selectionUrl}\" target=\"_blank\" style=\"background-color: #007bff; color: #ffffff; padding: 8px 12px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px;\">Select</a>\n      </td>\n    </tr>\n  `;\n});\n\n// 3. Construct the email HTML fragment (Removed <html>/<body> tags to prevent empty email issues)\nconst emailHtml = `\n<div style=\"font-family: Arial, sans-serif; color: #333; width: 100%; max-width: 600px; margin: 0 auto;\">\n  <h3>Insurance Quotes Available</h3>\n  <p>Hello,</p>\n  <p>We found ${items.length} quotes for your review based on your request.</p>\n  \n  <table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n    <thead style=\"background-color: #f8f9fa;\">\n      <tr>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Provider</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Quote ID</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Coverage(Comprehensive)</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Deductible</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">AddedCoverage</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Premium</th>\n        <th style=\"padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6;\">Action</th>\n      </tr>\n    </thead>\n    <tbody>\n      ${emailRows}\n    </tbody>\n  </table>\n\n  <p style=\"margin-top: 20px;\">Please select the option that best fits your needs.</p>\n  <p>Best regards,<br>Your Insurance Team</p>\n</div>\n`;\n\n// 4. Output the result\n// This creates a single item with a field called 'html_body'\nreturn [{\n  json: {\n    subject: `Insurance Quotes for ${items[0].json.customer_id}`,\n    html_body: emailHtml\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         0,
-        640
+        592
       ],
       "id": "73dc2a12-8d2c-4b26-ae16-80a0a3523736",
       "name": "Code in JavaScript"
@@ -258,107 +230,11 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -464,
-        608
+        -448,
+        560
       ],
       "id": "f1577579-2d56-4fc1-923f-d3a356bdc070",
       "name": "Merge"
-    },
-    {
-      "parameters": {
-        "operation": "sendAndWait",
-        "sendTo": "oterademoacrisure@gmail.com",
-        "subject": "Acknowledge Details",
-        "message": "=Year/Make/Model:   {{ $json[\"Year/Make/Mode\"] }};\nLast known mileage: {{ $json[\"Current Mileage\"] }};\nNo of drivers: {{ $json[\"Number of drivers\"] }};\nCoverage: {{ $json.Coverage }}\nBased on your car usage, we are assuming your current odometer reading is: {{ Number($json[\"Current Mileage\"]) + Number($json[\"annual mileage\"])}};\nPlease confirm the odometer reading and number of drivers.",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        -1024,
-        560
-      ],
-      "id": "107fbc49-6a38-4b48-9585-4b45792ba2c6",
-      "name": "Send message and wait for response",
-      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "ol1gBESUbhHw1c1c",
-          "name": "Gmail account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "sendAndWait",
-        "sendTo": "progressivecgt@gmail.com",
-        "subject": "Request For Auto Quote",
-        "message": "=Dear Sir/Madam,\nI hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate:\nName:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }};\nDate of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }};\nAddress:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }};\nYear/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }};\nNo of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }};\nCurrent odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}}; \nAccidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};\n\nBest Regards\n",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        -688,
-        400
-      ],
-      "id": "55af8f69-ebe5-44de-90eb-0bde10e34bd2",
-      "name": "Send message and wait for response1",
-      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "ol1gBESUbhHw1c1c",
-          "name": "Gmail account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "sendAndWait",
-        "sendTo": "travellerscgt@gmail.com",
-        "subject": "Request For Auto Quote",
-        "message": "=Dear Sir/Madam,\nI hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate:\nName:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }};\nDate of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }};\nAddress:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }};\nYear/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }};\nNo of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }};\nCurrent odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}}; \nAccidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};\n\nBest Regards\n",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        -704,
-        640
-      ],
-      "id": "c41380aa-3acc-4d81-9ea8-207e2de3effc",
-      "name": "Travellers1",
-      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "ol1gBESUbhHw1c1c",
-          "name": "Gmail account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "sendAndWait",
-        "sendTo": "libertymutualcgt@gmail.com",
-        "subject": "Request For Auto Quote",
-        "message": "=Dear Sir/Madam,\nI hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate:\nName:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }};\nDate of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }};\nAddress:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }};\nYear/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }};\nNo of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }};\nCurrent odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}}; \nAccidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};\n\nBest Regards\n",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        -688,
-        848
-      ],
-      "id": "c7e3b2b3-bd3e-4181-a81f-ae46a391e646",
-      "name": "Travellers",
-      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "ol1gBESUbhHw1c1c",
-          "name": "Gmail account"
-        }
-      }
     },
     {
       "parameters": {
@@ -387,12 +263,84 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
       "position": [
-        880,
-        624
+        896,
+        592
       ],
       "id": "5476e705-1408-4413-8ebd-5b057ac2af53",
       "name": "Send a message1",
       "webhookId": "ddc06c68-219e-446c-a30b-519b67b3862a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ol1gBESUbhHw1c1c",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "progressivecgt@gmail.com",
+        "subject": "Request For Auto Quote",
+        "message": "=Dear Sir/Madam,\nI hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate:\nName:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }};\nDate of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }};\nAddress:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }};\nYear/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }};\nNo of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }};\nCurrent odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}}; \nAccidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};\n\nBest Regards\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -672,
+        400
+      ],
+      "id": "55af8f69-ebe5-44de-90eb-0bde10e34bd2",
+      "name": "progressive",
+      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ol1gBESUbhHw1c1c",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "travellerscgt@gmail.com",
+        "subject": "Request For Auto Quote",
+        "message": "=Dear Sir/Madam,\nI hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate:\nName:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }};\nDate of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }};\nAddress:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }};\nYear/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }};\nNo of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }};\nCurrent odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}}; \nAccidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};\n\nBest Regards\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -672,
+        592
+      ],
+      "id": "c41380aa-3acc-4d81-9ea8-207e2de3effc",
+      "name": "traveller",
+      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ol1gBESUbhHw1c1c",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "libertymutualcgt@gmail.com",
+        "subject": "Request For Auto Quote",
+        "message": "=Dear Sir/Madam,\nI hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate:\nName:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }};\nDate of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }};\nAddress:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }};\nYear/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }};\nNo of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }};\nCurrent odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}}; \nAccidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};\n\nBest Regards\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -672,
+        784
+      ],
+      "id": "c7e3b2b3-bd3e-4181-a81f-ae46a391e646",
+      "name": "liberty mutual",
+      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
       "credentials": {
         "gmailOAuth2": {
           "id": "ol1gBESUbhHw1c1c",
@@ -410,11 +358,11 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
       "position": [
-        -1168,
+        -896,
         880
       ],
       "id": "62c37635-46a3-48b7-8d00-c6ba0b7296d0",
-      "name": "Send a message",
+      "name": "Resubmit the correct policy document",
       "webhookId": "ddc06c68-219e-446c-a30b-519b67b3862a",
       "credentials": {
         "gmailOAuth2": {
@@ -422,6 +370,84 @@
           "name": "Gmail account"
         }
       }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "oterademoacrisure@gmail.com",
+        "subject": "Acknowledge Details",
+        "message": "=Year/Make/Model:   {{ $json[\"Year/Make/Mode\"] }};\nLast known mileage: {{ $json[\"Current Mileage\"] }};\nNo of drivers: {{ $json[\"Number of drivers\"] }};\nCoverage: {{ $json.Coverage }}\nBased on your car usage, we are assuming your current odometer reading is: {{ Number($json[\"Current Mileage\"]) + Number($json[\"annual mileage\"])}};\nPlease confirm the odometer reading and number of drivers.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -896,
+        688
+      ],
+      "id": "107fbc49-6a38-4b48-9585-4b45792ba2c6",
+      "name": "Acknowledge Policy",
+      "webhookId": "ec2d5777-2ced-4dc4-b979-83cd63930b0c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ol1gBESUbhHw1c1c",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "case",
+        "type": "Structural",
+        "additionalFields": {
+          "description": "=Dear Sir/Madam, I hope this message finds you well. I am reaching out to request a quote for auto insurance coverage. Below are the details you may need to prepare an accurate estimate: Name:  {{ $node[\"Existing Policy Found / Not\"].json[\"beneficiary_name\"] }}; Date of Birth:  {{ $node[\"Existing Policy Found / Not\"].json[\"Date of Birth\"] }}; Address:  {{ $node[\"Existing Policy Found / Not\"].json[\"Address\"] }}; Year/Make/Model:   {{ $node[\"Existing Policy Found / Not\"].json[\"Year/Make/Mode\"] }}; No of drivers: {{ $node[\"Existing Policy Found / Not\"].json[\"Number of drivers\"] }}; Current odometer reading is: {{ Number($node[\"Existing Policy Found / Not\"].json[\"Current Mileage\"]) + Number($node[\"Existing Policy Found / Not\"].json[\"annual mileage\"])}};  Accidents/Violations:  {{ $node[\"Existing Policy Found / Not\"].json[\"Accidents/Violations\"] }};  Best Regards",
+          "subject": "Quote Accepted"
+        }
+      },
+      "type": "n8n-nodes-base.salesforce",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        976
+      ],
+      "id": "01c265fa-8c7a-48ef-a8d7-9ede69b8b8dc",
+      "name": "Create a case",
+      "credentials": {
+        "salesforceOAuth2Api": {
+          "id": "H0wa4zheMq4O1iKR",
+          "name": "Salesforce account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "data0",
+        "options": {
+          "keepSource": "both"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -1728,
+        784
+      ],
+      "id": "30f4c842-6022-4c49-a761-4ece08496458",
+      "name": "Extract PDF"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.text || \"\";\n\n// Normalize line breaks and spacing\nconst cleanText = text.replace(/\\r?\\n|\\r/g, ' ').replace(/\\s+/g, ' ');\n\n// Match \"Policy Number:\" followed by a POL-style ID\nconst policyMatch = cleanText.match(/Policy Number:\\s*(POL-\\d{4}-\\d{6})/i);\n\n// Fallback: grab all POL-style IDs and assume second one is policy number\nconst allPols = [...text.matchAll(/POL-\\d{4}-\\d{6}/g)];\nconst fallbackPolicy = allPols.length >= 2 ? allPols[1][0] : allPols[0]?.[0] || null;\n\n// Final result: prefer labeled match, fallback to second POL\nconst policyNumber = policyMatch?.[1] || fallbackPolicy;\n\nreturn [\n  {\n    policy_number: policyNumber,\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1536,
+        784
+      ],
+      "id": "5d2a477c-c7c2-48b8-927b-082e82a9af2c",
+      "name": "Search Policy Number"
     }
   ],
   "pinData": {},
@@ -430,25 +456,14 @@
       "main": [
         [
           {
-            "node": "Send message and wait for response",
+            "node": "Acknowledge Policy",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Send a message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Extract from File": {
-      "main": [
-        [
-          {
-            "node": "Code in JavaScript1",
+            "node": "Resubmit the correct policy document",
             "type": "main",
             "index": 0
           }
@@ -459,7 +474,7 @@
       "main": [
         [
           {
-            "node": "Extract from File",
+            "node": "Extract PDF",
             "type": "main",
             "index": 0
           }
@@ -471,17 +486,6 @@
         [
           {
             "node": "Existing Policy Found / Not",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code in JavaScript1": {
-      "main": [
-        [
-          {
-            "node": "Look up in Existing Policy1",
             "type": "main",
             "index": 0
           }
@@ -554,28 +558,7 @@
         ]
       ]
     },
-    "Send message and wait for response": {
-      "main": [
-        [
-          {
-            "node": "Send message and wait for response1",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Travellers1",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Travellers",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Send message and wait for response1": {
+    "progressive": {
       "main": [
         [
           {
@@ -586,7 +569,7 @@
         ]
       ]
     },
-    "Travellers1": {
+    "traveller": {
       "main": [
         [
           {
@@ -597,7 +580,7 @@
         ]
       ]
     },
-    "Travellers": {
+    "liberty mutual": {
       "main": [
         [
           {
@@ -607,13 +590,72 @@
           }
         ]
       ]
+    },
+    "Acknowledge Policy": {
+      "main": [
+        [
+          {
+            "node": "progressive",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "traveller",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "liberty mutual",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a case",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a case": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Extract PDF": {
+      "main": [
+        [
+          {
+            "node": "Search Policy Number",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Policy Number": {
+      "main": [
+        [
+          {
+            "node": "Look up in Existing Policy1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "00abbb7b-1d21-4a76-84a7-0fc5578f412a",
+  "versionId": "b1d24177-2608-43af-b859-204e00012bc1",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "5d9877f3c605b098b54a25d7959e61484f8ef1823d6175b60513f52fb13c0bf4"

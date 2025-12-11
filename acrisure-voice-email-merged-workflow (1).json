@@ -1,0 +1,657 @@
+{
+  "name": "Acrisure - Voice Agent with Email & Attachments (Gmail)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "voice-agent-complete",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-400, 200],
+      "id": "webhook-main",
+      "name": "Webhook",
+      "webhookId": "voice-agent-complete"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1FGAmAncvJ0ivF6za2aTzLzClY_xqbonSYwp3uvJRr_w",
+          "mode": "list",
+          "cachedResultName": "Customer Information Table",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FGAmAncvJ0ivF6za2aTzLzClY_xqbonSYwp3uvJRr_w/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FGAmAncvJ0ivF6za2aTzLzClY_xqbonSYwp3uvJRr_w/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "email",
+              "lookupValue": "={{ $json.body.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [-160, 200],
+      "id": "get-user-data",
+      "name": "Get User Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook').first().json.body.question }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an Insurance Compliance Router. Your goal is to output a strictly formatted JSON object.\n\n### 1. ANALYSIS RULES\nClassify the incoming user question into one of two categories:\n- \"LICENSED\": If the question requires coverage interpretation, advice, quoting, or suitability (e.g., \"Is this covered?\", \"What is better?\", \"Get a quote\").\n- \"UNLICENSED\": If the question is administrative, factual policy info, billing, or documentation (e.g., \"Renew policy\", \"Change address\", \"When does my policy renew\").\n\n### 2. DATA INPUT\nUser Question: \"{{ $('Webhook').item.json.body.question }}\"\n\nCustomer Info:\n- Policy Number: {{ $json.policy_id }}\n- Customer ID: {{ $json.customer_id }}\n- Customer Name: {{ $json.customer_name }}\n- Email: {{ $json.email }}\n- Carrier Name: {{ $json.carrier_name }}\n- Insurance Type: {{ $json.insurance_type }}\n- Status: {{ $json.status }}\n- Renewal Date: {{ $json['renewal date'] }}\n- Premium: {{ $json.premium }}\n\n### 3. OUTPUT FORMAT\nYou must return ONLY valid JSON. Do not include markdown formatting like ```json.\nThe JSON must follow this exact schema:\n\n{\n  \"User Question\": \"{{ $('Webhook').item.json.body.question }}\",\n  \"classification\": \"LICENSED or UNLICENSED\",\n  \"customer_info\": {\n    \"policy_number\": \"{{ $json.policy_id }}\",\n    \"customer_id\": \"{{ $json.customer_id }}\",\n    \"customer_name\": \"{{ $json.customer_name }}\",\n    \"email\": \"{{ $json.email }}\",\n    \"carrier_name\": \"{{ $json.carrier_name }}\",\n    \"insurance_type\": \"{{ $json.insurance_type }}\",\n    \"status\": \"{{ $json.status }}\",\n    \"renewal_date\": \"{{ $json['renewal date'] }}\",\n    \"premium\": \"{{ $json.premium }}\"\n  }\n}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [80, 200],
+      "id": "decision-agent",
+      "name": "Decision Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [80, 420],
+      "id": "decision-gemini",
+      "name": "Decision Agent - Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL_ID",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{ \"User Question\":\"question\",\n  \"classification\": \"LICENSED or UNLICENSED\",\n  \"customer_info\": {\n    \"policy_number\": \"POL-123\",\n    \"customer_id\": \"CUST-001\",\n    \"customer_name\": \"John Doe\",\n    \"email\": \"john@email.com\",\n    \"carrier_name\": \"SafeGuard\",\n    \"insurance_type\": \"Auto\",\n    \"status\": \"Active\",\n    \"renewal_date\": \"2026-03-15\",\n    \"premium\": \"$150\"\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [240, 420],
+      "id": "parser-decision",
+      "name": "Parser"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.classification }}",
+                    "rightValue": "UNLICENSED",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "cond-unlicensed"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cond-licensed",
+                    "leftValue": "={{ $json.output.classification }}",
+                    "rightValue": "LICENSED",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [400, 200],
+      "id": "switch-classification",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook').first().json.body.question }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an UNLICENSED Administrative Assistant.\nYour authority is strictly limited to Clerical, Administrative, and Factual tasks. You work under the supervision of a licensed agent.\n\n### CUSTOMER CONTEXT\n- Policy Number: {{ $json.output.customer_info.policy_number }}\n- Customer ID: {{ $json.output.customer_info.customer_id }}\n- Customer Name: {{ $json.output.customer_info.customer_name }}\n- Email: {{ $json.output.customer_info.email }}\n- Carrier Name: {{ $json.output.customer_info.carrier_name }}\n- Insurance Type: {{ $json.output.customer_info.insurance_type }}\n- Status: {{ $json.output.customer_info.status }}\n- Renewal Date: {{ $json.output.customer_info.renewal_date }}\n- Premium: {{ $json.output.customer_info.premium }}\n\n### STRICT REGULATORY GUARDRAILS (DO NOT CROSS)\n1. NO ADVICE: Do not offer opinions on coverage limits or needs.\n2. NO INTERPRETATION: Do not interpret policy language or hypotheticals.\n3. NO BINDING: You cannot bind, change, or cancel coverage.\n4. NO STEERING: Do not compare carriers to influence the client's choice.\n\n### AUTHORIZED ACTIONS\n1. FACTUAL INFO: You may read neutral data from the context above.\n2. DATA ENTRY: You may collect information to pass to a licensed agent.\n3. LOGISTICS: You may schedule appointments, send ID cards/declarations pages, and take payments.\n4. NEUTRAL DESCRIPTIONS: If discussing options, read them neutrally without recommending one.\n\nUser Question: \"{{ $('Webhook').first().json.body.question }}\"\n\nStart your response with \"[Unlicensed]:\""
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [640, 0],
+      "id": "unlicensed-agent",
+      "name": "UNLICENSED Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [640, 220],
+      "id": "unlicensed-gemini",
+      "name": "UNLICENSED Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL_ID",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"Response\": \"Response text here\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [800, 220],
+      "id": "parser-unlicensed",
+      "name": "Parser1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook').first().json.body.question }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a LICENSED Insurance Agent acting as the immediate digital triage for a high-touch insurance renewal process.\nWhile you possess the knowledge to interpret policies, your current specific role is to validate the user's intent and IMMEDIATELY bridge them to a live human conversation for any substantive coverage discussions.\n\n### CUSTOMER CONTEXT\n- Policy Number: {{ $json.output.customer_info.policy_number }}\n- Customer ID: {{ $json.output.customer_info.customer_id }}\n- Customer Name: {{ $json.output.customer_info.customer_name }}\n- Email: {{ $json.output.customer_info.email }}\n- Carrier Name: {{ $json.output.customer_info.carrier_name }}\n- Insurance Type: {{ $json.output.customer_info.insurance_type }}\n- Status: {{ $json.output.customer_info.status }}\n- Renewal Date: {{ $json.output.customer_info.renewal_date }}\n- Premium: {{ $json.output.customer_info.premium }}\n\n### YOUR RESPONSIBILITIES (The Handoff Protocol)\n1. DATA CONFIRMATION: You may confirm factual data listed in the Customer Context above.\n2. IDENTIFY COVERAGE QUESTIONS: Watch for questions regarding coverage, advice, interpretation.\n3. EXECUTE HANDOFF: If the user asks ANY coverage question, transition to live phone line.\n\n### INSTRUCTIONS\n- If it is a simple factual confirmation, answer it briefly.\n- If the user asks about Coverage, Advice, or Policy Interpretation, use the handoff phrase.\n\nRequired Handoff Phrase for Coverage Questions:\n\"That is an excellent question regarding your protection. To ensure you receive the most accurate advice on this specific coverage detail, I am connecting you to a live specialist right now. Please wait while I connect the call.\"\n\nUser Question: \"{{ $('Webhook').first().json.body.question }}\"\nThe value of \"response\" must start with \"[Licensed]:\""
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [640, 400],
+      "id": "licensed-agent",
+      "name": "LICENSED Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [640, 620],
+      "id": "licensed-gemini",
+      "name": "LICENSED Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL_ID",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"Response\": \"Response text here\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [800, 620],
+      "id": "parser-licensed",
+      "name": "Parser2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check-send-email",
+              "leftValue": "={{ $('Webhook').first().json.body.sendEmail }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [960, 200],
+      "id": "check-email-flag",
+      "name": "Send Email?"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [1440, 100],
+      "id": "respond-webhook",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "=",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "YOUR_GOOGLE_DRIVE_FOLDER_ID",
+            "mode": "id"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1200, 400],
+      "id": "search-quotes",
+      "name": "Search for Quote Files",
+      "executeOnce": true,
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YOUR_GOOGLE_DRIVE_CREDENTIAL_ID",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1400, 400],
+      "id": "download-files",
+      "name": "Download Files",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "YOUR_GOOGLE_DRIVE_CREDENTIAL_ID",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge all binary files into one item for email attachment\nconst mergedBinary = {};\nconst summary = [];\n\nitems.forEach((item, index) => {\n  if (item.binary) {\n    Object.keys(item.binary).forEach((key) => {\n      const newKey = `${key}_${index}`;\n      mergedBinary[newKey] = item.binary[key];\n      summary.push({\n        originalKey: key,\n        newKey: newKey,\n        fileName: item.binary[key].fileName\n      });\n    });\n  }\n});\n\nreturn [{\n  json: {\n    message: \"Successfully merged binary items\",\n    fileCount: Object.keys(mergedBinary).length,\n    files: summary\n  },\n  binary: mergedBinary\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1600, 400],
+      "id": "merge-files",
+      "name": "Merge Files"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build HTML email body with quote comparison table\nlet emailRows = '';\n\nconst customerInfo = $('Decision Agent').first().json.output?.customer_info || {};\n\n// Sample quote data for demo\nconst quotes = [\n  { carrier: 'Liberty Mutual', quote_id: 'LM-2024-001', coverage: '$100k/$300k', deductible: '$500', premium: '$145/mo' },\n  { carrier: 'Progressive', quote_id: 'PRG-2024-002', coverage: '$100k/$300k', deductible: '$500', premium: '$138/mo' },\n  { carrier: 'Travelers', quote_id: 'TRV-2024-003', coverage: '$100k/$300k', deductible: '$750', premium: '$125/mo' }\n];\n\nquotes.forEach((quote, index) => {\n  emailRows += `\n    <tr>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee;\">\n        <strong>${quote.carrier}</strong>\n        ${index === 2 ? '<br><span style=\"color: green; font-weight: bold; font-size: 10px;\">★ RECOMMENDED</span>' : ''}\n      </td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee;\">${quote.quote_id}</td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee;\">${quote.coverage}</td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee;\">${quote.deductible}</td>\n      <td style=\"padding: 12px; border-bottom: 1px solid #eeeeee; font-weight: bold;\">${quote.premium}</td>\n    </tr>\n  `;\n});\n\nconst emailHtml = `\n<div style=\"font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;\">\n  <h2 style=\"color: #0077b6;\">Insurance Quote Comparison</h2>\n  <p>Dear ${customerInfo.customer_name || 'Valued Customer'},</p>\n  <p>Based on your request, we have gathered the following quotes for your review:</p>\n  \n  <table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" style=\"margin: 20px 0;\">\n    <thead style=\"background-color: #f8f9fa;\">\n      <tr>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Provider</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Quote ID</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Coverage</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Deductible</th>\n        <th style=\"padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;\">Premium</th>\n      </tr>\n    </thead>\n    <tbody>\n      ${emailRows}\n    </tbody>\n  </table>\n\n  <p>Please review the attached quote documents for complete details.</p>\n  <p>If you have any questions, please reply to this email or call us at 1-800-ACRISURE.</p>\n  <p>Best regards,<br><strong>Acrisure Insurance Team</strong></p>\n</div>\n`;\n\nreturn [{\n  json: {\n    subject: `Insurance Quotes for ${customerInfo.customer_name || 'Customer'} - Policy ${customerInfo.policy_number || 'N/A'}`,\n    html_body: emailHtml,\n    to_email: customerInfo.email || 'customer@email.com'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1200, 600],
+      "id": "build-email",
+      "name": "Build Email HTML"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Build Email HTML').first().json.to_email }}",
+        "subject": "={{ $('Build Email HTML').first().json.subject }}",
+        "emailType": "html",
+        "message": "={{ $('Build Email HTML').first().json.html_body }}",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "data_0"
+              },
+              {
+                "property": "data_1"
+              },
+              {
+                "property": "data_2"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [1800, 400],
+      "id": "send-gmail",
+      "name": "Send Email (Gmail)",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Acrisure Voice Agent - Complete\n\n### Features:\n1. Licensed/Unlicensed Classification\n2. Google Gemini AI\n3. Email with Attachments (Gmail)\n4. Google Drive File Retrieval\n\n### Webhook Input:\n```json\n{\n  \"question\": \"User question\",\n  \"email\": \"customer@email.com\",\n  \"sendEmail\": true,\n  \"attachFiles\": true\n}\n```\n\n### Setup:\n1. Configure Google Sheets credentials\n2. Configure Google Gemini API\n3. Configure Gmail OAuth2\n4. Configure Google Drive OAuth2\n5. Update folder ID for quote files",
+        "height": 480,
+        "width": 340,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-700, 0],
+      "id": "info-note",
+      "name": "Info"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get User Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Data": {
+      "main": [
+        [
+          {
+            "node": "Decision Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decision Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decision Agent - Gemini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Decision Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Decision Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "UNLICENSED Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "LICENSED Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UNLICENSED Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UNLICENSED Gemini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "UNLICENSED Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "UNLICENSED Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LICENSED Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LICENSED Gemini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LICENSED Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "LICENSED Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email?": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Search for Quote Files",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Email HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search for Quote Files": {
+      "main": [
+        [
+          {
+            "node": "Download Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Files": {
+      "main": [
+        [
+          {
+            "node": "Merge Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Files": {
+      "main": [
+        [
+          {
+            "node": "Send Email (Gmail)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Email HTML": {
+      "main": [
+        [
+          {
+            "node": "Send Email (Gmail)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email (Gmail)": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "merged-voice-email-v1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "acrisure-voice-email-merged"
+  },
+  "id": "acrisure-voice-email-merged",
+  "tags": [
+    {
+      "name": "voice-agent",
+      "createdAt": "2025-12-08T00:00:00.000Z",
+      "updatedAt": "2025-12-08T00:00:00.000Z"
+    },
+    {
+      "name": "gmail",
+      "createdAt": "2025-12-08T00:00:00.000Z",
+      "updatedAt": "2025-12-08T00:00:00.000Z"
+    },
+    {
+      "name": "attachments",
+      "createdAt": "2025-12-08T00:00:00.000Z",
+      "updatedAt": "2025-12-08T00:00:00.000Z"
+    }
+  ]
+}

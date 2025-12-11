@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acrisure Insurance | Voice Agent with Email & Attachments</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 15px; }
+        
+        header { text-align: center; padding: 20px 0; }
+        .logo { font-size: 2.5rem; }
+        header h1 { font-size: 1.5rem; color: #00b4d8; margin: 8px 0 4px; }
+        header p { color: #90e0ef; font-size: 0.85rem; }
+        .badge-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .badge.licensed { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
+        .badge.unlicensed { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; }
+        .badge.gemini { background: linear-gradient(135deg, #4285f4, #34a853); color: #fff; }
+        .badge.gmail { background: linear-gradient(135deg, #ea4335, #fbbc04); color: #fff; }
+        .badge.attach { background: linear-gradient(135deg, #9333ea, #c026d3); color: #fff; }
+        
+        .config-section {
+            background: rgba(0,180,216,0.1);
+            border: 1px solid rgba(0,180,216,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .config-section h3 {
+            color: #00b4d8;
+            font-size: 13px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .config-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .config-row.full { grid-template-columns: 1fr; }
+        .config-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+        @media (max-width: 600px) {
+            .config-row, .config-row.triple { grid-template-columns: 1fr; }
+        }
+        .config-group label {
+            display: block;
+            color: #90e0ef;
+            font-size: 11px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .config-group input, .config-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid rgba(0,180,216,0.4);
+            border-radius: 6px;
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-size: 13px;
+        }
+        .config-group input:focus, .config-group select:focus {
+            outline: none;
+            border-color: #00b4d8;
+            box-shadow: 0 0 0 2px rgba(0,180,216,0.2);
+        }
+        
+        /* File Upload Area - FIXED */
+        .file-upload-section {
+            margin-bottom: 15px;
+        }
+        .file-upload-section h4 {
+            color: #c4b5fd;
+            font-size: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .file-upload-dropzone {
+            border: 2px dashed rgba(147, 51, 234, 0.5);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            background: rgba(147, 51, 234, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .file-upload-dropzone:hover {
+            border-color: #9333ea;
+            background: rgba(147, 51, 234, 0.2);
+        }
+        .file-upload-dropzone.dragover {
+            border-color: #c026d3;
+            background: rgba(192, 38, 211, 0.3);
+            transform: scale(1.02);
+        }
+        .file-upload-dropzone .icon { font-size: 2.5rem; margin-bottom: 10px; }
+        .file-upload-dropzone .text { color: #c4b5fd; font-size: 14px; font-weight: 500; }
+        .file-upload-dropzone .hint { color: #8b5cf6; font-size: 11px; margin-top: 8px; }
+        .file-upload-dropzone .browse-btn {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #9333ea, #c026d3);
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .file-upload-dropzone .browse-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .file-list-container {
+            margin-top: 12px;
+        }
+        .file-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .file-list-header span {
+            color: #a78bfa;
+            font-size: 12px;
+        }
+        .clear-files-btn {
+            padding: 4px 10px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 4px;
+            color: #f87171;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .clear-files-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: rgba(147, 51, 234, 0.15);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            border-radius: 8px;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .file-item .file-icon {
+            font-size: 1.5rem;
+        }
+        .file-item .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .file-item .file-name {
+            color: #e9d5ff;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .file-item .file-size {
+            color: #a78bfa;
+            font-size: 11px;
+        }
+        .file-item .file-status {
+            color: #22c55e;
+            font-size: 11px;
+        }
+        .file-item .remove-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .file-item .remove-btn:hover {
+            background: rgba(239, 68, 68, 0.4);
+            color: #fff;
+        }
+        
+        .audio-init {
+            background: rgba(168,85,247,0.15);
+            border: 1px solid rgba(168,85,247,0.4);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .audio-init button {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .audio-init.ready { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); }
+        .audio-init.ready button { background: linear-gradient(135deg, #16a34a, #22c55e); }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        @media (max-width: 768px) {
+            .main-layout { grid-template-columns: 1fr; }
+        }
+        
+        .panel {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .panel-header {
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .panel-header h3 {
+            font-size: 13px;
+            color: #90e0ef;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-content {
+            padding: 12px;
+            height: 280px;
+            overflow-y: auto;
+        }
+        
+        /* Chat Panel */
+        .message { margin-bottom: 12px; max-width: 90%; }
+        .message.user { margin-left: auto; }
+        .message .bubble {
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 13px;
+            line-height: 1.5;
+            display: inline-block;
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+        .message.user .bubble {
+            background: linear-gradient(135deg, #0077b6, #00b4d8);
+            text-align: right;
+        }
+        .message.bot .bubble {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .message.bot.licensed .bubble {
+            border-color: rgba(16,185,129,0.5);
+            background: rgba(16,185,129,0.1);
+        }
+        .message.bot.unlicensed .bubble {
+            border-color: rgba(245,158,11,0.5);
+            background: rgba(245,158,11,0.1);
+        }
+        .message .meta {
+            font-size: 10px;
+            color: #666;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .message.user .meta { justify-content: flex-end; }
+        .agent-tag {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .agent-tag.licensed { background: #10b981; color: #fff; }
+        .agent-tag.unlicensed { background: #f59e0b; color: #000; }
+        .agent-tag.email { background: #ea4335; color: #fff; }
+        
+        /* JSON Panel */
+        .json-output {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: #a5f3fc;
+        }
+        .json-key { color: #fbbf24; }
+        .json-string { color: #86efac; }
+        .json-number { color: #c4b5fd; }
+        .json-boolean { color: #f472b6; }
+        .json-null { color: #94a3b8; }
+        
+        .copy-btn {
+            padding: 4px 10px;
+            background: rgba(0,180,216,0.2);
+            border: 1px solid rgba(0,180,216,0.4);
+            border-radius: 4px;
+            color: #00b4d8;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .copy-btn:hover { background: rgba(0,180,216,0.3); }
+        
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        .status-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+        .status-dot.listening { background: #3b82f6; animation: pulse 0.5s infinite; }
+        .status-dot.speaking { background: #a855f7; animation: pulse 0.7s infinite; }
+        .status-dot.processing { background: #f59e0b; animation: pulse 1s infinite; }
+        .status-dot.error { background: #ef4444; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+        
+        .classification-display {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .class-card {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            background: rgba(0,0,0,0.2);
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .class-card.licensed { border-color: rgba(16,185,129,0.3); }
+        .class-card.unlicensed { border-color: rgba(245,158,11,0.3); }
+        .class-card.active.licensed {
+            background: rgba(16,185,129,0.2);
+            border-color: #10b981;
+            box-shadow: 0 0 20px rgba(16,185,129,0.3);
+        }
+        .class-card.active.unlicensed {
+            background: rgba(245,158,11,0.2);
+            border-color: #f59e0b;
+            box-shadow: 0 0 20px rgba(245,158,11,0.3);
+        }
+        .class-card .icon { font-size: 1.5rem; margin-bottom: 4px; }
+        .class-card .title { font-size: 12px; font-weight: bold; }
+        .class-card .desc { font-size: 10px; color: #90e0ef; }
+        
+        .voice-section { text-align: center; margin: 15px 0; }
+        .mic-btn {
+            width: 70px; height: 70px;
+            border-radius: 50%;
+            border: 3px solid #00b4d8;
+            background: linear-gradient(135deg, #0077b6, #00b4d8);
+            color: #fff;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,180,216,0.4);
+        }
+        .mic-btn:hover { transform: scale(1.05); }
+        .mic-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .mic-btn.listening {
+            background: linear-gradient(135deg, #dc2626, #f59e0b);
+            border-color: #f59e0b;
+            animation: pulseBig 1s infinite;
+        }
+        .mic-btn.speaking {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            border-color: #a855f7;
+        }
+        @keyframes pulseBig { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+        .voice-hint { color: #90e0ef; margin-top: 8px; font-size: 12px; }
+        
+        .input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+        .input-row input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid rgba(0,180,216,0.3);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-size: 14px;
+        }
+        .input-row input:focus { outline: none; border-color: #00b4d8; }
+        .input-row button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #0077b6, #00b4d8);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .input-row button:hover { transform: scale(1.02); }
+        
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+        .quick-actions button {
+            padding: 8px 14px;
+            border: 1px solid rgba(0,180,216,0.4);
+            border-radius: 18px;
+            background: rgba(0,180,216,0.1);
+            color: #90e0ef;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quick-actions button:hover { background: rgba(0,180,216,0.25); color: #fff; }
+        .quick-actions button.licensed { border-color: rgba(16,185,129,0.5); }
+        .quick-actions button.licensed:hover { background: rgba(16,185,129,0.2); }
+        .quick-actions button.unlicensed { border-color: rgba(245,158,11,0.5); }
+        .quick-actions button.unlicensed:hover { background: rgba(245,158,11,0.2); }
+        .quick-actions button.email { border-color: rgba(234,67,53,0.5); }
+        .quick-actions button.email:hover { background: rgba(234,67,53,0.2); }
+        
+        /* Settings Section */
+        .settings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        .settings label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #90e0ef;
+            cursor: pointer;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .settings label:hover {
+            background: rgba(0,180,216,0.1);
+        }
+        .settings label.active {
+            background: rgba(147, 51, 234, 0.2);
+            border: 1px solid rgba(147, 51, 234, 0.4);
+        }
+        .settings input[type="checkbox"] { 
+            width: 16px; height: 16px; 
+            accent-color: #00b4d8;
+            flex-shrink: 0;
+        }
+        .settings .setting-icon {
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .settings .setting-text {
+            flex: 1;
+        }
+        
+        /* Email notification */
+        .email-notification {
+            background: rgba(234,67,53,0.15);
+            border: 1px solid rgba(234,67,53,0.4);
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 12px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+        .email-notification.show { display: flex; }
+        .email-notification .icon { font-size: 1.2rem; }
+        .email-notification .text { flex: 1; color: #fca5a5; }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(0,180,216,0.3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,180,216,0.5); }
+        
+        /* Hidden file input */
+        #fileInput {
+            position: absolute;
+            left: -9999px;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">🛡️</div>
+            <h1>Acrisure Insurance</h1>
+            <p>Voice Agent with Email & File Attachments</p>
+            <div class="badge-row">
+                <span class="badge licensed">👨‍💼 Licensed</span>
+                <span class="badge unlicensed">📋 Unlicensed</span>
+                <span class="badge gemini">🤖 Gemini</span>
+                <span class="badge gmail">📧 Gmail</span>
+                <span class="badge attach">📎 Attachments</span>
+            </div>
+        </header>
+        
+        <!-- Configuration Section -->
+        <div class="config-section">
+            <h3>⚙️ Configuration</h3>
+            <div class="config-row full">
+                <div class="config-group">
+                    <label>🔗 n8n Webhook URL</label>
+                    <input type="text" id="webhookUrl" placeholder="https://your-n8n.app.n8n.cloud/webhook/voice-agent-complete">
+                </div>
+            </div>
+            <div class="config-row triple">
+                <div class="config-group">
+                    <label>📧 Customer Email</label>
+                    <input type="email" id="customerEmail" value="john.doe@email.com" placeholder="customer@email.com">
+                </div>
+                <div class="config-group">
+                    <label>📨 Send Quotes To</label>
+                    <input type="email" id="sendToEmail" value="customer@email.com" placeholder="recipient@email.com">
+                </div>
+                <div class="config-group">
+                    <label>🎤 TTS Voice</label>
+                    <select id="voiceSelect"></select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- File Upload Section - FIXED -->
+        <div class="file-upload-section">
+            <h4>📎 File Attachments</h4>
+            <div class="file-upload-dropzone" id="dropzone">
+                <div class="icon">📁</div>
+                <div class="text">Drag & drop files here</div>
+                <div class="hint">or</div>
+                <button type="button" class="browse-btn" id="browseBtn">Browse Files</button>
+                <div class="hint" style="margin-top: 12px;">Supports: PDF, DOC, DOCX, PNG, JPG, GIF (max 10MB)</div>
+            </div>
+            <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.txt,.csv,.xlsx">
+            
+            <div class="file-list-container" id="fileListContainer" style="display: none;">
+                <div class="file-list-header">
+                    <span>📎 <span id="fileCount">0</span> file(s) ready to attach</span>
+                    <button type="button" class="clear-files-btn" id="clearFilesBtn">Clear All</button>
+                </div>
+                <div class="file-list" id="fileList"></div>
+            </div>
+        </div>
+        
+        <!-- Audio Init -->
+        <div id="audioInit" class="audio-init">
+            <button onclick="initAudio()">🔊 Click to Enable Voice</button>
+        </div>
+        
+        <!-- Email Notification -->
+        <div class="email-notification" id="emailNotification">
+            <span class="icon">📧</span>
+            <span class="text" id="emailNotificationText">Email with attachments will be sent to customer</span>
+        </div>
+        
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div id="statusDot" class="status-dot"></div>
+            <span id="statusText">Ready</span>
+            <span style="margin-left: auto; font-size: 11px; color: #666;">
+                Files: <span id="fileCountStatus">0</span> | Session: <span id="sessionId">-</span>
+            </span>
+        </div>
+        
+        <!-- Classification Display -->
+        <div class="classification-display">
+            <div class="class-card licensed" id="licensedCard">
+                <div class="icon">👨‍💼</div>
+                <div class="title">Licensed Agent</div>
+                <div class="desc">Advice • Quotes • Binding</div>
+            </div>
+            <div class="class-card unlicensed" id="unlicensedCard">
+                <div class="icon">📋</div>
+                <div class="title">Unlicensed Staff</div>
+                <div class="desc">Admin • Factual • Billing</div>
+            </div>
+        </div>
+        
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Chat Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>💬 Conversation</h3>
+                    <button class="copy-btn" onclick="clearChat()">Clear</button>
+                </div>
+                <div class="panel-content" id="chatContainer">
+                    <div class="message bot">
+                        <div class="bubble">Welcome to Acrisure Insurance! 👋
+
+I can help with policy questions and send quote documents via email. Upload files above to attach them!</div>
+                        <div class="meta">
+                            <span>Now</span>
+                            <span class="agent-tag licensed">system</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- JSON Output Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>📄 JSON Response</h3>
+                    <button class="copy-btn" onclick="copyJson()">📋 Copy</button>
+                </div>
+                <div class="panel-content">
+                    <div class="json-output" id="jsonOutput">// Response JSON will appear here...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Voice Input -->
+        <div class="voice-section">
+            <button id="micBtn" class="mic-btn" onclick="toggleVoice()">🎤</button>
+            <p class="voice-hint" id="voiceHint">Click microphone to speak</p>
+        </div>
+        
+        <!-- Text Input -->
+        <div class="input-row">
+            <input type="text" id="textInput" placeholder="Type your question here..." onkeypress="if(event.key==='Enter')sendText()">
+            <button onclick="sendText()">Send</button>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="unlicensed" onclick="send('When does my policy renew?')">📅 Renewal Date</button>
+            <button class="unlicensed" onclick="send('What is my premium amount?')">💰 Premium</button>
+            <button class="licensed" onclick="send('Is water damage covered?')">🏠 Coverage</button>
+            <button class="licensed" onclick="send('What limits do you recommend?')">💡 Advice</button>
+            <button class="email" onclick="send('Send me the quote documents')">📧 Email Quotes</button>
+            <button class="email" onclick="send('Compare insurance quotes for me')">📊 Compare</button>
+        </div>
+        
+        <!-- Settings -->
+        <div class="settings">
+            <label>
+                <input type="checkbox" id="ttsEnabled" checked>
+                <span class="setting-icon">🔊</span>
+                <span class="setting-text">Speak responses</span>
+            </label>
+            <label>
+                <input type="checkbox" id="autoListen">
+                <span class="setting-icon">🎤</span>
+                <span class="setting-text">Auto-listen after response</span>
+            </label>
+            <label>
+                <input type="checkbox" id="showRawJson" checked>
+                <span class="setting-icon">📄</span>
+                <span class="setting-text">Show full JSON</span>
+            </label>
+            <label id="sendEmailLabel">
+                <input type="checkbox" id="sendEmailEnabled" onchange="updateEmailNotification()">
+                <span class="setting-icon">📧</span>
+                <span class="setting-text">Send email with response</span>
+            </label>
+            <label id="attachFilesLabel">
+                <input type="checkbox" id="attachFilesEnabled" onchange="updateEmailNotification()">
+                <span class="setting-icon">📎</span>
+                <span class="setting-text">Attach uploaded files</span>
+            </label>
+            <label>
+                <input type="checkbox" id="demoMode">
+                <span class="setting-icon">🎭</span>
+                <span class="setting-text">Demo Mode (no server)</span>
+            </label>
+        </div>
+    </div>
+
+    <script>
+        // ==================== STATE ====================
+        let sessionId = 'session-' + Date.now();
+        let audioReady = false;
+        let voices = [];
+        let isListening = false;
+        let isSpeaking = false;
+        let recognition = null;
+        let lastResponse = null;
+        let lastClassification = null;
+        let uploadedFiles = [];
+        
+        document.getElementById('sessionId').textContent = sessionId.slice(-8);
+        
+        // ==================== DEMO DATA ====================
+        const demoCustomer = {
+            policy_number: "POL-2024-78542",
+            customer_id: "CUST-001",
+            customer_name: "John Doe",
+            email: "john.doe@email.com",
+            carrier_name: "SafeGuard Insurance",
+            insurance_type: "Homeowners",
+            status: "Active",
+            renewal_date: "2026-03-15",
+            premium: "$187.50/month"
+        };
+        
+        // ==================== FILE UPLOAD - FIXED ====================
+        const dropzone = document.getElementById('dropzone');
+        const browseBtn = document.getElementById('browseBtn');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const fileListContainer = document.getElementById('fileListContainer');
+        const clearFilesBtn = document.getElementById('clearFilesBtn');
+        
+        // Browse button click
+        browseBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            fileInput.click();
+        });
+        
+        // Dropzone click (but not on button)
+        dropzone.addEventListener('click', function(e) {
+            if (e.target !== browseBtn && !browseBtn.contains(e.target)) {
+                fileInput.click();
+            }
+        });
+        
+        // File input change
+        fileInput.addEventListener('change', function(e) {
+            console.log('File input changed:', e.target.files);
+            if (e.target.files && e.target.files.length > 0) {
+                handleFiles(e.target.files);
+            }
+        });
+        
+        // Drag and drop
+        dropzone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add('dragover');
+        });
+        
+        dropzone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('dragover');
+        });
+        
+        dropzone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('dragover');
+            console.log('Files dropped:', e.dataTransfer.files);
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+        
+        // Clear all files
+        clearFilesBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            uploadedFiles = [];
+            updateFileList();
+            updateEmailNotification();
+        });
+        
+        function handleFiles(files) {
+            console.log('Handling files:', files.length);
+            
+            Array.from(files).forEach(file => {
+                console.log('Processing file:', file.name, file.size, file.type);
+                
+                if (file.size > 10 * 1024 * 1024) {
+                    alert(`File "${file.name}" is too large (max 10MB)`);
+                    return;
+                }
+                
+                // Check if file already exists
+                if (uploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    console.log('File already exists:', file.name);
+                    return;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    console.log('File loaded:', file.name);
+                    uploadedFiles.push({
+                        name: file.name,
+                        size: file.size,
+                        type: file.type || 'application/octet-stream',
+                        data: e.target.result
+                    });
+                    updateFileList();
+                    updateEmailNotification();
+                };
+                
+                reader.onerror = function(e) {
+                    console.error('Error reading file:', file.name, e);
+                    alert(`Error reading file "${file.name}"`);
+                };
+                
+                reader.readAsDataURL(file);
+            });
+            
+            // Reset file input so same file can be selected again
+            fileInput.value = '';
+        }
+        
+        function updateFileList() {
+            const count = uploadedFiles.length;
+            document.getElementById('fileCount').textContent = count;
+            document.getElementById('fileCountStatus').textContent = count;
+            
+            if (count === 0) {
+                fileListContainer.style.display = 'none';
+                fileList.innerHTML = '';
+                return;
+            }
+            
+            fileListContainer.style.display = 'block';
+            
+            fileList.innerHTML = uploadedFiles.map((file, index) => `
+                <div class="file-item" data-index="${index}">
+                    <span class="file-icon">${getFileIcon(file.type)}</span>
+                    <div class="file-info">
+                        <div class="file-name" title="${file.name}">${file.name}</div>
+                        <div class="file-size">${formatFileSize(file.size)} • <span class="file-status">✓ Ready</span></div>
+                    </div>
+                    <button type="button" class="remove-btn" onclick="removeFile(${index})">×</button>
+                </div>
+            `).join('');
+            
+            // Update attach label
+            const attachLabel = document.getElementById('attachFilesLabel');
+            if (count > 0) {
+                attachLabel.classList.add('active');
+            } else {
+                attachLabel.classList.remove('active');
+            }
+        }
+        
+        function removeFile(index) {
+            console.log('Removing file at index:', index);
+            uploadedFiles.splice(index, 1);
+            updateFileList();
+            updateEmailNotification();
+        }
+        
+        function getFileIcon(type) {
+            if (!type) return '📄';
+            if (type.includes('pdf')) return '📕';
+            if (type.includes('word') || type.includes('doc')) return '📘';
+            if (type.includes('image')) return '🖼️';
+            if (type.includes('excel') || type.includes('sheet')) return '📗';
+            if (type.includes('text')) return '📝';
+            return '📄';
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        
+        function updateEmailNotification() {
+            const sendEmail = document.getElementById('sendEmailEnabled').checked;
+            const attachFiles = document.getElementById('attachFilesEnabled').checked;
+            const notification = document.getElementById('emailNotification');
+            const sendLabel = document.getElementById('sendEmailLabel');
+            const attachLabel = document.getElementById('attachFilesLabel');
+            
+            // Update label styles
+            sendLabel.classList.toggle('active', sendEmail);
+            attachLabel.classList.toggle('active', attachFiles && uploadedFiles.length > 0);
+            
+            if (sendEmail || (attachFiles && uploadedFiles.length > 0)) {
+                notification.classList.add('show');
+                let text = '';
+                if (sendEmail) {
+                    text = 'Email';
+                    if (attachFiles && uploadedFiles.length > 0) {
+                        text += ` with ${uploadedFiles.length} file(s)`;
+                    }
+                    text += ' will be sent';
+                } else if (attachFiles && uploadedFiles.length > 0) {
+                    text = `${uploadedFiles.length} file(s) ready to attach`;
+                }
+                document.getElementById('emailNotificationText').textContent = text;
+            } else {
+                notification.classList.remove('show');
+            }
+        }
+        
+        // ==================== AUDIO INIT ====================
+        function loadVoices() {
+            voices = speechSynthesis.getVoices();
+            const select = document.getElementById('voiceSelect');
+            select.innerHTML = '';
+            
+            const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+            (englishVoices.length > 0 ? englishVoices : voices).forEach((voice, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = voice.name.substring(0, 25) + ' (' + voice.lang + ')';
+                if (voice.default) opt.selected = true;
+                select.appendChild(opt);
+            });
+        }
+        
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+        loadVoices();
+        
+        function initAudio() {
+            speechSynthesis.cancel();
+            voices = speechSynthesis.getVoices();
+            
+            const utterance = new SpeechSynthesisUtterance("Voice ready. How can I help you today?");
+            const voice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google'))
+                       || voices.find(v => v.lang === 'en-US')
+                       || voices.find(v => v.lang.startsWith('en'));
+            if (voice) utterance.voice = voice;
+            
+            utterance.onstart = () => {
+                audioReady = true;
+                document.getElementById('audioInit').classList.add('ready');
+                document.getElementById('audioInit').innerHTML = '<button onclick="initAudio()">✅ Voice Enabled</button>';
+                setStatus('speaking', 'Speaking...');
+            };
+            
+            utterance.onend = () => setStatus('ready', 'Ready');
+            speechSynthesis.speak(utterance);
+        }
+        
+        // ==================== SPEECH RECOGNITION ====================
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+            
+            recognition.onstart = () => {
+                isListening = true;
+                document.getElementById('micBtn').classList.add('listening');
+                document.getElementById('voiceHint').textContent = '🎤 Listening...';
+                setStatus('listening', 'Listening...');
+            };
+            
+            recognition.onend = () => {
+                isListening = false;
+                document.getElementById('micBtn').classList.remove('listening');
+                document.getElementById('voiceHint').textContent = 'Click microphone to speak';
+                if (!isSpeaking) setStatus('ready', 'Ready');
+            };
+            
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                send(transcript);
+            };
+            
+            recognition.onerror = () => {
+                isListening = false;
+                document.getElementById('micBtn').classList.remove('listening');
+                setStatus('ready', 'Ready');
+            };
+        }
+        
+        function toggleVoice() {
+            if (!recognition) {
+                alert('Speech recognition not supported. Use Chrome or Edge.');
+                return;
+            }
+            if (isSpeaking) {
+                speechSynthesis.cancel();
+                isSpeaking = false;
+            }
+            if (isListening) {
+                recognition.stop();
+            } else {
+                try { recognition.start(); } catch(e) {}
+            }
+        }
+        
+        // ==================== TTS ====================
+        function speak(text) {
+            return new Promise((resolve) => {
+                if (!document.getElementById('ttsEnabled').checked || !audioReady) {
+                    resolve();
+                    return;
+                }
+                
+                speechSynthesis.cancel();
+                const cleanText = text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
+                                     .replace(/\[Licensed\]:\s*/gi, '')
+                                     .replace(/\[Unlicensed\]:\s*/gi, '');
+                
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                const voiceIdx = document.getElementById('voiceSelect').value;
+                if (voices[voiceIdx]) utterance.voice = voices[voiceIdx];
+                
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                
+                utterance.onstart = () => {
+                    isSpeaking = true;
+                    document.getElementById('micBtn').classList.add('speaking');
+                    setStatus('speaking', 'Speaking...');
+                };
+                
+                utterance.onend = () => {
+                    isSpeaking = false;
+                    document.getElementById('micBtn').classList.remove('speaking');
+                    setStatus('ready', 'Ready');
+                    
+                    if (document.getElementById('autoListen').checked && recognition) {
+                        setTimeout(() => { try { recognition.start(); } catch(e) {} }, 500);
+                    }
+                    resolve();
+                };
+                
+                utterance.onerror = () => { isSpeaking = false; resolve(); };
+                speechSynthesis.speak(utterance);
+            });
+        }
+        
+        // ==================== UI HELPERS ====================
+        function setStatus(type, text) {
+            document.getElementById('statusDot').className = 'status-dot ' + type;
+            document.getElementById('statusText').textContent = text;
+        }
+        
+        function updateClassificationUI(classification) {
+            const licensed = document.getElementById('licensedCard');
+            const unlicensed = document.getElementById('unlicensedCard');
+            
+            licensed.classList.remove('active');
+            unlicensed.classList.remove('active');
+            
+            if (classification === 'LICENSED') {
+                licensed.classList.add('active');
+            } else if (classification === 'UNLICENSED') {
+                unlicensed.classList.add('active');
+            }
+            
+            lastClassification = classification;
+        }
+        
+        function addMessage(text, type, classification = null, emailSent = false, filesAttached = 0) {
+            const container = document.getElementById('chatContainer');
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            let classStr = type;
+            let tagHtml = '';
+            
+            if (type === 'bot' && classification) {
+                classStr += ' ' + classification.toLowerCase();
+                tagHtml = `<span class="agent-tag ${classification.toLowerCase()}">${classification}</span>`;
+            }
+            
+            if (emailSent) {
+                tagHtml += ` <span class="agent-tag email">📧 Sent${filesAttached > 0 ? ` +${filesAttached} files` : ''}</span>`;
+            }
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message ' + classStr;
+            msgDiv.innerHTML = `
+                <div class="bubble">${text}</div>
+                <div class="meta">
+                    <span>${time}</span>
+                    ${tagHtml}
+                </div>
+            `;
+            
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function updateJsonOutput(data) {
+            const container = document.getElementById('jsonOutput');
+            lastResponse = data;
+            
+            if (document.getElementById('showRawJson').checked) {
+                container.innerHTML = syntaxHighlight(JSON.stringify(data, null, 2));
+            } else {
+                container.innerHTML = syntaxHighlight(JSON.stringify({
+                    classification: data.output?.classification,
+                    response: data.output?.Response,
+                    emailSent: data.emailSent,
+                    filesAttached: data.filesAttached
+                }, null, 2));
+            }
+        }
+        
+        function syntaxHighlight(json) {
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, 
+                function (match) {
+                    let cls = 'json-number';
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'json-key';
+                        } else {
+                            cls = 'json-string';
+                        }
+                    } else if (/true|false/.test(match)) {
+                        cls = 'json-boolean';
+                    } else if (/null/.test(match)) {
+                        cls = 'json-null';
+                    }
+                    return '<span class="' + cls + '">' + match + '</span>';
+                });
+        }
+        
+        function copyJson() {
+            if (lastResponse) {
+                navigator.clipboard.writeText(JSON.stringify(lastResponse, null, 2));
+                alert('JSON copied to clipboard!');
+            }
+        }
+        
+        function clearChat() {
+            document.getElementById('chatContainer').innerHTML = `
+                <div class="message bot">
+                    <div class="bubble">Chat cleared. How can I help you?</div>
+                    <div class="meta"><span>Now</span></div>
+                </div>
+            `;
+        }
+        
+        // ==================== DEMO MODE HANDLER ====================
+        function handleDemoMode(question) {
+            const lowerQ = question.toLowerCase();
+            const sendEmail = document.getElementById('sendEmailEnabled').checked;
+            const attachFiles = document.getElementById('attachFilesEnabled').checked;
+            
+            const licensedKeywords = ['covered', 'coverage', 'recommend', 'advice', 'quote', 'should', 'better', 'compare', 'interpret', 'bind', 'limits'];
+            const isLicensed = licensedKeywords.some(kw => lowerQ.includes(kw));
+            const isEmailRequest = lowerQ.includes('email') || lowerQ.includes('send') || lowerQ.includes('quote');
+            
+            const classification = isLicensed ? 'LICENSED' : 'UNLICENSED';
+            let response = '';
+            let emailSent = false;
+            let filesAttached = 0;
+            
+            if (isLicensed) {
+                if (lowerQ.includes('covered') || lowerQ.includes('coverage')) {
+                    response = "[Licensed]: Based on your Homeowners policy, I can help explain your coverage. Your policy includes dwelling, personal property, and liability protection. For water damage specifically, sudden pipe bursts are typically covered, but gradual leaks require separate coverage.";
+                } else if (lowerQ.includes('recommend') || lowerQ.includes('advice') || lowerQ.includes('limits')) {
+                    response = "[Licensed]: Based on your current coverage and home value, I recommend increasing your dwelling coverage to at least $350,000. I also suggest adding an umbrella policy for additional liability protection.";
+                } else if (lowerQ.includes('quote') || lowerQ.includes('compare')) {
+                    response = "[Licensed]: I've gathered quotes from Liberty Mutual, Progressive, and Travelers. The recommended option from Travelers offers the best value at $125/month.";
+                    if (sendEmail || isEmailRequest) {
+                        response += "\n\n📧 Sending detailed quote documents to your email now.";
+                        emailSent = true;
+                        filesAttached = (attachFiles && uploadedFiles.length > 0) ? uploadedFiles.length : 0;
+                    }
+                } else {
+                    response = "[Licensed]: As your licensed agent, I can provide expert advice. Let me review your policy details and give you a professional recommendation.";
+                }
+            } else {
+                if (lowerQ.includes('renew') || lowerQ.includes('renewal')) {
+                    response = `[Unlicensed]: Your renewal date is ${demoCustomer.renewal_date}. You'll receive renewal documents approximately 30 days before.`;
+                } else if (lowerQ.includes('premium') || lowerQ.includes('payment')) {
+                    response = `[Unlicensed]: Your current premium is ${demoCustomer.premium}. Your account is in good standing.`;
+                } else if (lowerQ.includes('email') || lowerQ.includes('send') || lowerQ.includes('document')) {
+                    response = "[Unlicensed]: I can send you your policy documents.";
+                    if (sendEmail) {
+                        response += "\n\n📧 Sending documents to your email now.";
+                        emailSent = true;
+                        filesAttached = (attachFiles && uploadedFiles.length > 0) ? uploadedFiles.length : 0;
+                    }
+                } else {
+                    response = `[Unlicensed]: Your policy ${demoCustomer.policy_number} is ${demoCustomer.status}. Premium: ${demoCustomer.premium}. Renewal: ${demoCustomer.renewal_date}.`;
+                }
+            }
+            
+            return {
+                output: {
+                    "User Question": question,
+                    classification: classification,
+                    Response: response,
+                    customer_info: demoCustomer
+                },
+                emailSent: emailSent,
+                filesAttached: filesAttached,
+                filesIncluded: filesAttached > 0 ? uploadedFiles.map(f => f.name) : [],
+                sendToEmail: document.getElementById('sendToEmail').value
+            };
+        }
+        
+        // ==================== MAIN SEND ====================
+        function sendText() {
+            const input = document.getElementById('textInput');
+            const text = input.value.trim();
+            if (text) {
+                send(text);
+                input.value = '';
+            }
+        }
+        
+        async function send(question) {
+            const webhookUrl = document.getElementById('webhookUrl').value.trim();
+            const email = document.getElementById('customerEmail').value.trim();
+            const sendToEmail = document.getElementById('sendToEmail').value.trim();
+            const demoMode = document.getElementById('demoMode').checked;
+            const sendEmail = document.getElementById('sendEmailEnabled').checked;
+            const attachFiles = document.getElementById('attachFilesEnabled').checked;
+            
+            addMessage(question, 'user');
+            setStatus('processing', 'Processing...');
+            
+            console.log('📤 Preparing to send...');
+            console.log('Files to attach:', uploadedFiles.length);
+            console.log('Send email:', sendEmail);
+            console.log('Attach files:', attachFiles);
+            
+            // Demo mode or no webhook URL
+            if (demoMode || !webhookUrl) {
+                setTimeout(async () => {
+                    const data = handleDemoMode(question);
+                    
+                    const classification = data.output?.classification || 'UNLICENSED';
+                    const responseText = data.output?.Response || 'No response';
+                    
+                    updateClassificationUI(classification);
+                    updateJsonOutput(data);
+                    addMessage(responseText, 'bot', classification, data.emailSent, data.filesAttached);
+                    setStatus('ready', 'Ready');
+                    
+                    await speak(responseText);
+                }, 800);
+                return;
+            }
+            
+            // Real API call
+            const payload = {
+                question: question,
+                email: email,
+                sendEmail: sendEmail,
+                attachFiles: attachFiles,
+                sendToEmail: sendToEmail,
+                fileCount: uploadedFiles.length,
+                files: (attachFiles && uploadedFiles.length > 0) ? uploadedFiles.map(f => ({
+                    name: f.name,
+                    type: f.type,
+                    size: f.size,
+                    data: f.data
+                })) : []
+            };
+            
+            console.log('📤 SENDING PAYLOAD:');
+            console.log('- Question:', payload.question);
+            console.log('- Email:', payload.email);
+            console.log('- Send Email:', payload.sendEmail);
+            console.log('- Attach Files:', payload.attachFiles);
+            console.log('- File Count:', payload.fileCount);
+            console.log('- Files:', payload.files.map(f => f.name));
+            
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const rawText = await response.text();
+                console.log('📥 RAW RESPONSE:', rawText);
+                
+                if (!rawText || rawText.trim() === '') {
+                    throw new Error('Empty response from server');
+                }
+                
+                const data = JSON.parse(rawText);
+                console.log('📥 PARSED:', data);
+                
+                const classification = data.output?.classification || 
+                                      (data.output?.Response?.startsWith('[Licensed]') ? 'LICENSED' : 'UNLICENSED');
+                const responseText = data.output?.Response || data.Response || 'Response received';
+                const emailSent = data.emailSent || false;
+                const filesAttached = data.filesAttached || 0;
+                
+                updateClassificationUI(classification);
+                updateJsonOutput(data);
+                addMessage(responseText, 'bot', classification, emailSent, filesAttached);
+                setStatus('ready', 'Ready');
+                
+                await speak(responseText);
+                
+            } catch (err) {
+                console.error('❌ Error:', err);
+                setStatus('error', 'Error');
+                
+                const errorResponse = {
+                    error: err.message,
+                    hint: "Check webhook URL or enable Demo Mode"
+                };
+                updateJsonOutput(errorResponse);
+                addMessage('Error: ' + err.message + '. Try enabling Demo Mode.', 'bot');
+            }
+        }
+        
+        // Log initial state
+        console.log('🚀 Acrisure Voice Agent initialized');
+        console.log('Session:', sessionId);
+    </script>
+</body>
+</html>

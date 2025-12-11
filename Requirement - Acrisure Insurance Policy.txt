@@ -3,7 +3,7 @@ Requirement - Acrisure Insurance Policy
 Insurance Policy Renewal Flow (Chat / Policy Upload)
 1. Customer Initiation
 - Customer starts via Chat or Policy Upload.
-- Example (Chat): “I wish to renew my auto insurance policy. My Policy ID is POL‑2024‑001234.”
+- Example (Chat): “Please, I wish to ask for your help in renewing my auto insurance policy. My policy ID is: POL-2024-001234”
  
 2. Customer Acknowledgement
 - System sends acknowledgement to oterademoacrisure@gmail.com confirming receipt of the renewal request.
@@ -59,6 +59,7 @@ for N8n Redirect URI
 514264987674-se375nrimpk58ahor2d6v5o4b85q82ib.apps.googleusercontent.com-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
 
 ====================
+
 
 
 
